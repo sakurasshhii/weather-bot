@@ -12,7 +12,3 @@ async def process_start_command(message: Message):
 @router.message(Command(commands=['help']))
 async def process_help_command(message: Message):
     await message.answer('i cant help you as well as i cant help myself')
-
-@router.message()
-async def unexpected_command(message: Message):
-    await message.reply('unlknown bla bla')
