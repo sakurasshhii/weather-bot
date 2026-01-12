@@ -14,6 +14,7 @@ async def main() -> None:
 
     dp.include_routers(
         app.bot.handlers.router,
+        app.bot.handlers.api_router,
         app.bot.handlers.unexpected_router
     )
     
