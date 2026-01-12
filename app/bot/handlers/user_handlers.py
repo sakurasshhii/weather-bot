@@ -12,7 +12,7 @@ api_router = Router()
 @api_router.message(Command(commands=['weather']))
 async def process_weather(message: Message):
 
-    city = 'Москва'
+    city = 'Москва'  # need to get user's city
     openmeteo = openmeteo_requests.AsyncClient()
 
     # Make sure all required weather variables are listed here
