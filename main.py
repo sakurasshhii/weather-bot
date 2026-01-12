@@ -10,8 +10,12 @@ import app.bot.handlers
 logger = logging.getLogger(__name__)
 
 async def main() -> None:
-    logging.basicConfig(level=logging.DEBUG)
-    
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='!%(levelname)-8s! [%(asctime)s] '\
+            '%(filename)s:%(lineno)d - %(message)s - %(name)s'
+    )
+
     config: Config = load_config()
 
     bot = Bot(token=config.tg_bot.bot_token)
