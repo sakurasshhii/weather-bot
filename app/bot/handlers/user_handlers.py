@@ -38,6 +38,6 @@ async def process_weather(message: Message):
     current_relative_humidity_2m = current.Variables(1).Value() # pyright: ignore[reportOptionalMemberAccess]
 
     await message.answer(
-        f'Current temperature: {round(current_temperature_2m, 2)}\n'\
-        f'Current relative humidity: {current_relative_humidity_2m}'
+        f'Current temperature: {round(current_temperature_2m, 1)}\n'\
+        f'Current relative humidity: {round(current_relative_humidity_2m, 1)}'
     )
