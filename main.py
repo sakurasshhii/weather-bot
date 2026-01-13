@@ -6,6 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config_data.config import Config, load_config
 import app.bot.handlers as handlers
+import app.bot.keyboards as keyboards
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,9 @@ async def main() -> None:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()  # добавить объект хранилища storage
+
+    # Настраиваем кнопку Menu
+    await keyboards.set_main_menu(bot)
 
     # регистрируем роутеры
     logger.info('Include routers...')
