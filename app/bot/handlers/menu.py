@@ -1,5 +1,5 @@
-from aiogram.types import Message
 from aiogram import Router
+from aiogram.types import Message
 from aiogram.filters import Command, CommandStart
 from app.bot.lexic.lexic import MENU_RU
 

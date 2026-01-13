@@ -1,5 +1,5 @@
-from aiogram.types import Message
 from aiogram import Router
+from aiogram.types import Message
 from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
 
