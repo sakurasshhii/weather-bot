@@ -6,7 +6,10 @@ from app.bot.keyboards.weather import *
 from app.bot.lexic.lexic import WEATHER_RU
 
 import openmeteo_requests
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 api_router = Router()
 weather_router = Router()
@@ -49,9 +52,12 @@ async def process_weather(message: Message, city='Мурманск'):
 
     # Process first location
     response = responses[0]
-    print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
-    print(f"Elevation: {response.Elevation()} m asl")
-    print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
+    logger.info(
+        f'Weather request from chat {message.chat.id}:\n' \
+        f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E\n" \
+        f"Elevation: {response.Elevation()} m asl\n" \
+        f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s"
+    )
 
     current = response.Current()
     current_temperature_2m = current.Variables(0).Value()  # pyright: ignore[reportOptionalMemberAccess]
