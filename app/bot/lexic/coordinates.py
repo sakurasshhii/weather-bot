@@ -12,4 +12,4 @@ with open(fr'app\bot\lexic\coordinates.txt', encoding='utf-8') as f:
     }
     
     coordinates = pd.DataFrame(d, index=("latitude", "longitude"))
-    city_names = tuple(d.keys())
+    city_names = {c.lower() for c in d.keys()}

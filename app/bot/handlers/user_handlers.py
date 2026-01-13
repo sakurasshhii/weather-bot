@@ -18,18 +18,19 @@ async def process_ask_location(message: Message):
     Запрос локации для погоды
     '''
     await message.answer(
-        text=WEATHER_RU['req_location_txt'],
+        text=WEATHER_RU['req_loc_txt'],
         reply_markup=req_location_keyboard
     )
 
 
 @api_router.message(Command(commands=['weather']))
-async def process_weather(message: Message):
-
+async def process_weather(message: Message, city='Мурманск'):
+    '''
+    Отправка погоды пользователю через open-meteo API
+    '''
     if not message.location:
-        city = 'Мурманск'
-        latitude = coordinates[city]["latitude"]
-        longitude = coordinates[city]["longitude"]
+        latitude = coordinates[city.capitalize()]["latitude"]
+        longitude = coordinates[city.capitalize()]["longitude"]
     else:
         latitude = message.location.latitude
         longitude = message.location.longitude
@@ -69,4 +70,24 @@ async def process_weather(message: Message):
 
 @weather_router.message(F.location)
 async def process_weather_loc(message: Message):
+    '''
+    Ответ на геолокацию: отправка погоды.
+    '''
     await process_weather(message)
+
+
+@weather_router.message(F.text == WEATHER_RU['other_loc_btn'])
+async def process_other_location(message: Message):
+    '''
+    Запрос: введите ваш город
+    '''
+    await message.answer(WEATHER_RU['other_loc'])
+
+
+@weather_router.message(F.text.lower().in_(city_names))
+async def process_weather_other(message: Message):
+    '''
+    Ответ на название города: отправка погоды.
+    '''
+    print(message.model_dump_json())
+    await process_weather(message, message.text)
