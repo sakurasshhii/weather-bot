@@ -1,6 +1,7 @@
 MAIN_MENU_RU: dict[str, str] = {
     '/start': 'Запуск бота',
-    '/help': 'Информация о возможностях бота'
+    '/help': 'Информация о возможностях бота',
+    '/weather_in_location': 'Посмотреть погоду'
 }
 
 MENU_RU: dict[str, str] = {
