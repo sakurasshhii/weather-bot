@@ -2,30 +2,42 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from config_data.config import Config, load_config
-
-import app.bot.handlers
+from app.bot.handlers import start_router, api_router, unexpected_router
 
 
 logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
+    # Конфигурируем логирование
     logging.basicConfig(
         level=logging.DEBUG,
         format='!%(levelname)-8s! [%(asctime)s] '
         '%(filename)s:%(lineno)d - %(message)s - %(name)s'
     )
 
+    logger.info('Starting bot...')
+
+    # Загружаем Config
     config: Config = load_config()
 
-    bot = Bot(token=config.tg_bot.bot_token)
-    dp = Dispatcher()
+    # Инициализируем бот и диспетчер
+    bot = Bot(
+        token=config.tg_bot.bot_token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    )
+    dp = Dispatcher()  # добавить объект хранилища storage
 
+    # регистрируем роутеры
+    logger.info('Include routers...')
+    
     dp.include_routers(
-        app.bot.handlers.router,
-        app.bot.handlers.api_router,
-        app.bot.handlers.unexpected_router
+        start_router,
+        api_router,
+        unexpected_router
     )
 
     logger.info('start polling...')
