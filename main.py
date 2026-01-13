@@ -43,6 +43,7 @@ async def main() -> None:
     dp.include_routers(
         handlers.start_router,
         handlers.api_router,
+        handlers.weather_router,
         handlers.unexpected_router
     )
 

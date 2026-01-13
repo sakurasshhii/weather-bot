@@ -1,26 +1,47 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
+from app.bot.keyboards.weather import *
+from app.bot.lexic.lexic import WEATHER_RU
 
 import openmeteo_requests
 
 
 api_router = Router()
+weather_router = Router()
 
 
-@api_router.message(Command(commands=['weather']))
+@weather_router.message(Command(commands=['weather_in_location']))
+async def process_ask_location(message: Message):
+    '''
+    Запрос локации для погоды
+    '''
+    await message.answer(
+        text=WEATHER_RU['req_location_txt'],
+        reply_markup=req_location_keyboard
+    )
+
+
+@weather_router.message(Command(commands=['weather']))
 async def process_weather(message: Message):
 
-    city = 'Москва'  # need to get user's city
+    if not message.location:
+        city = 'Мурманск'
+        latitude = coordinates[city]["latitude"]
+        longitude = coordinates[city]["longitude"]
+    else:
+        latitude = message.location.latitude
+        longitude = message.location.longitude
+
     openmeteo = openmeteo_requests.AsyncClient()
 
     # Make sure all required weather variables are listed here
     # The order of variables in hourly or daily is important to assign them correctly below
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
-        "latitude": coordinates[city]["latitude"],
-        "longitude": coordinates[city]["longitude"],
+        "latitude": latitude,
+        "longitude": longitude,
         "current": ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m"],
         "timezone": "auto"
     }
@@ -44,3 +65,8 @@ async def process_weather(message: Message):
         f'Precipitaion: {current_precipitaion}\n' \
         f'Wind speed: {round(current_wind_speed_10m, 1)}'
     )
+
+
+@weather_router.message(F.location)
+async def process_weather_loc(message: Message):
+    await process_weather(message)
