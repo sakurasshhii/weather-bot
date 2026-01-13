@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
 from app.bot.keyboards.weather import *
@@ -64,7 +64,8 @@ async def process_weather(message: Message, city='Мурманск'):
         f'Current temperature: {round(current_temperature_2m, 1)}\n' \
         f'Relative humidity: {round(current_relative_humidity_2m, 1)}\n' \
         f'Precipitaion: {current_precipitaion}\n' \
-        f'Wind speed: {round(current_wind_speed_10m, 1)}'
+        f'Wind speed: {round(current_wind_speed_10m, 1)}',
+        reply_markup=ReplyKeyboardRemove()
     )
 
 
