@@ -1,23 +1,27 @@
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command, CommandStart
-from app.bot.lexic.lexic import MENU_RU
+from app.bot.lexic.lexic import MENU_ANS_RU
 
 
 start_router = Router()
 unexpected_router = Router()
 
 
+# /start
 @start_router.message(CommandStart())
 async def process_start_command(message: Message):
-    await message.answer(MENU_RU['/start'])
+    await message.answer(MENU_ANS_RU['/start'])
 
 
+# /help
 @start_router.message(Command(commands=['help']))
 async def process_help_command(message: Message):
-    await message.answer(MENU_RU['/help'])
+    await message.answer(MENU_ANS_RU['/help'])
 
+
+# any other message
 @unexpected_router.message()
 async def unexpected_command(message: Message):
-    await message.reply(MENU_RU['/unexpected_message'])
+    await message.reply(MENU_ANS_RU['/unexpected_message'])
 
