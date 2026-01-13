@@ -12,17 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
-    # Конфигурируем логирование
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='!%(levelname)-8s! [%(asctime)s] '
-        '%(filename)s:%(lineno)d - %(message)s - %(name)s'
-    )
 
     logger.info('Starting bot...')
 
     # Загружаем Config
     config: Config = load_config()
+    
+    # Конфигурируем логирование
+    logging.basicConfig(
+        level=config.log.level,
+        format=config.log.format
+    )
 
     # Инициализируем бот и диспетчер
     bot = Bot(
@@ -33,7 +33,7 @@ async def main() -> None:
 
     # регистрируем роутеры
     logger.info('Include routers...')
-    
+
     dp.include_routers(
         start_router,
         api_router,
@@ -42,7 +42,7 @@ async def main() -> None:
 
     logger.info('start polling...')
 
-    await bot.delete_webhook(drop_pending_updates=True)
+    await bot.delete_webhook(drop_pending_updates=False)
     await dp.start_polling(bot)
 
 

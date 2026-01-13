@@ -9,8 +9,15 @@ class TgBot:
 
 
 @dataclass
+class LogSettings:
+    level: str
+    format: str
+
+
+@dataclass
 class Config:
     tg_bot: TgBot
+    log: LogSettings
 
 
 def load_config(path: str | None = None) -> Config:
@@ -22,5 +29,9 @@ def load_config(path: str | None = None) -> Config:
         tg_bot=TgBot(
             bot_token=env('BOT_TOKEN'),
             admin_id=env('ADMIN_ID')
+        ),
+        log=LogSettings(
+            level=env('LOG_LEVEL'),
+            format=env('LOG_FORMAT')
         )
     )
