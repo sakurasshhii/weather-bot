@@ -1,6 +1,8 @@
 import pandas as pd
 
 
+__all__ = ['coordinates', 'city_names']
+
 with open(fr'app\bot\lexic\coordinates.txt', encoding='utf-8') as f:
     head = f.readline().split()
     data = [line.split() for line in f.readlines()]

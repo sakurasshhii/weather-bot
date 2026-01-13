@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from aiogram import Router
 from aiogram.filters import Command
-from app.bot.lexic import coordinates
+from app.bot.lexic.coordinates import *
 
 import openmeteo_requests
 

@@ -1,1 +1,2 @@
-from .coordinates import coordinates
+from .coordinates import *
+from .lexic import *
