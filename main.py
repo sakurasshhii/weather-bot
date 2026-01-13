@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config_data.config import Config, load_config
-from app.bot.handlers import start_router, api_router, unexpected_router
+import app.bot.handlers as handlers
 
 
 logger = logging.getLogger(__name__)
@@ -37,9 +37,9 @@ async def main() -> None:
     logger.info('Include routers...')
 
     dp.include_routers(
-        start_router,
-        api_router,
-        unexpected_router
+        handlers.start_router,
+        handlers.api_router,
+        handlers.unexpected_router
     )
 
     logger.info('start polling...')
