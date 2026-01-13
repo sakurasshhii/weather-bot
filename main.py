@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
-
+    '''
+    Функция конфигурирования и запуска бота
+    '''
     logger.info('Starting bot...')
 
     # Загружаем Config
