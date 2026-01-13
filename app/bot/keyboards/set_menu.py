@@ -14,4 +14,6 @@ async def set_main_menu(bot: Bot):
             description=description
         ) for command, description in MAIN_MENU_RU.items()
     ]
-    await bot.set_my_commands(main_menu_commands)
+    await bot.set_my_commands(
+        commands=main_menu_commands
+    )
