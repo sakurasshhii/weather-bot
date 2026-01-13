@@ -23,7 +23,7 @@ async def process_ask_location(message: Message):
     )
 
 
-@weather_router.message(Command(commands=['weather']))
+@api_router.message(Command(commands=['weather']))
 async def process_weather(message: Message):
 
     if not message.location:
