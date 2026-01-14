@@ -1,1 +1,1 @@
-from .get_weather import get_weather_api
+from .get_weather import *

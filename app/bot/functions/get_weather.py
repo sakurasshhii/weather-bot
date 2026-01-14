@@ -7,9 +7,10 @@ from app.bot.lexic.coordinates import coordinates
 
 
 logger = logging.getLogger(__name__)
+__all__ = ['get_weather_api', 'get_current']
 
 
-async def get_weather_api(message: Message, city='Мурманск'):
+async def get_weather_api(message: Message, city: str = 'Мурманск'):
     '''
     Функция API запроса погоды
     '''
@@ -44,19 +45,22 @@ async def get_weather_api(message: Message, city='Мурманск'):
 
     return response
 
+async def get_current(response) -> pd.Series:
+    '''
+    Получение текущей погоды из результата запроса
+    '''
     current = response.Current()
 
-    variables = []
-    for i in range(4):
-        variables.append(current.Variables(i).Value()) # pyright: ignore[reportOptionalMemberAccess]
+    variables = [current.Variables(i).Value() for i in range(4)]
+
     # current_temperature_2m = current.Variables(0).Value()  # pyright: ignore[reportOptionalMemberAccess]
     # current_relative_humidity_2m = current.Variables(1).Value()  # pyright: ignore[reportOptionalMemberAccess]
     # current_precipitaion = current.Variables(2).Value() # pyright: ignore[reportOptionalMemberAccess]
     # current_wind_speed_10m = current.Variables(3).Value() # pyright: ignore[reportOptionalMemberAccess]
 
-    result = pd.Series(
+    data = pd.Series(
         variables, 
         ['current_temperature_2m', 'current_relative_humidity_2m', 'current_precipitaion', 'current_wind_speed_10m']
     )
 
-    return result
+    return data
