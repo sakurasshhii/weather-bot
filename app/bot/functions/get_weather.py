@@ -42,6 +42,8 @@ async def get_weather_api(message: Message, city='Мурманск'):
         f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s"
     )
 
+    return response
+
     current = response.Current()
 
     variables = []

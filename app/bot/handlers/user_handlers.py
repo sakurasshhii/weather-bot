@@ -8,6 +8,7 @@ from app.bot.functions import get_weather_api
 
 import openmeteo_requests
 import logging
+import pandas as pd
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,23 @@ async def process_ask_location(message: Message):
 
 @api_router.message(Command(commands=['weather']))
 async def process_weather(message: Message, city='Мурманск'):
-    data = await get_weather_api(message=message, city=city)
+    response = await get_weather_api(message=message, city=city)
+
+    current = response.Current()
+
+    variables = []
+    for i in range(4):
+        variables.append(current.Variables(i).Value()) # pyright: ignore[reportOptionalMemberAccess]
+    # current_temperature_2m = current.Variables(0).Value()  # pyright: ignore[reportOptionalMemberAccess]
+    # current_relative_humidity_2m = current.Variables(1).Value()  # pyright: ignore[reportOptionalMemberAccess]
+    # current_precipitaion = current.Variables(2).Value() # pyright: ignore[reportOptionalMemberAccess]
+    # current_wind_speed_10m = current.Variables(3).Value() # pyright: ignore[reportOptionalMemberAccess]
+
+    data = pd.Series(
+        variables, 
+        ['current_temperature_2m', 'current_relative_humidity_2m', 'current_precipitaion', 'current_wind_speed_10m']
+    )
+    # data = await get_weather_api(message=message, city=city)
 
     await message.answer(
         f'Current temperature: {round(data['current_temperature_2m'], 1)}\n' \
