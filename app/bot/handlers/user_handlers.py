@@ -4,6 +4,7 @@ from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
 from app.bot.keyboards.weather import *
 from app.bot.lexic.lexic import WEATHER_RU
+from app.bot.functions import get_weather_api
 
 import openmeteo_requests
 import logging
@@ -26,50 +27,13 @@ async def process_ask_location(message: Message):
 
 @api_router.message(Command(commands=['weather']))
 async def process_weather(message: Message, city='Мурманск'):
-    '''
-    Отправка погоды пользователю через open-meteo API.
-    Основной погодный хендлер.
-    '''
-    if not message.location:
-        latitude = coordinates[city.capitalize()]["latitude"]
-        longitude = coordinates[city.capitalize()]["longitude"]
-    else:
-        latitude = message.location.latitude
-        longitude = message.location.longitude
-
-    openmeteo = openmeteo_requests.AsyncClient()
-
-    # Make sure all required weather variables are listed here
-    # The order of variables in hourly or daily is important to assign them correctly below
-    url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "current": ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m"],
-        "timezone": "auto"
-    }
-    responses = await openmeteo.weather_api(url, params=params)
-
-    # Process first location
-    response = responses[0]
-    logger.info(
-        f'Weather request from chat {message.chat.id}:\n' \
-        f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E\n" \
-        f"Elevation: {response.Elevation()} m asl\n" \
-        f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s"
-    )
-
-    current = response.Current()
-    current_temperature_2m = current.Variables(0).Value()  # pyright: ignore[reportOptionalMemberAccess]
-    current_relative_humidity_2m = current.Variables(1).Value()  # pyright: ignore[reportOptionalMemberAccess]
-    current_precipitaion = current.Variables(2).Value() # pyright: ignore[reportOptionalMemberAccess]
-    current_wind_speed_10m = current.Variables(3).Value() # pyright: ignore[reportOptionalMemberAccess]
+    data = await get_weather_api(message=message, city=city)
 
     await message.answer(
-        f'Current temperature: {round(current_temperature_2m, 1)}\n' \
-        f'Relative humidity: {round(current_relative_humidity_2m, 1)}\n' \
-        f'Precipitaion: {current_precipitaion}\n' \
-        f'Wind speed: {round(current_wind_speed_10m, 1)}',
+        f'Current temperature: {round(data['current_temperature_2m'], 1)}\n' \
+        f'Relative humidity: {round(data['current_relative_humidity_2m'], 1)}\n' \
+        f'Precipitaion: {round(data['current_precipitaion'])}\n' \
+        f'Wind speed: {round(data['current_wind_speed_10m'], 1)}',
         reply_markup=ReplyKeyboardRemove()
     )
 
