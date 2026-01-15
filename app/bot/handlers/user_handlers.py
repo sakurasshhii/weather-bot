@@ -68,5 +68,6 @@ async def process_duration(callback: CallbackQuery):
     result = await bot_func.get_weather_api(user_loc=None, duration=callback.data)
 
     await callback.answer(
-        text=repr(result)
+        text=repr(result)[:200],
+        show_alert=False
     )
