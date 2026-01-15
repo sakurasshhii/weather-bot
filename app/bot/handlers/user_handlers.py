@@ -26,17 +26,34 @@ async def process_ask_location(message: Message):
 
 
 @api_router.message(Command(commands=['weather']))
-async def process_weather(message: Message, city='Мурманск'):
-    response = await bot_func.get_weather_api(message=message, city=city)
-    data = await bot_func.get_current(response=response)
+async def process_weather(message: Message, city='Мурманск', duration='current'):
+    response = await bot_func.get_weather_api(message=message, city=city, duration=duration)
+    
+    match duration:
+        case 'current':
+            data = await bot_func.get_current(response)
+            
+            await message.answer(
+                f'Current temperature: {round(data['current_temperature_2m'], 1)}\n' \
+                f'Relative humidity: {round(data['current_relative_humidity_2m'], 1)}\n' \
+                f'Precipitaion: {round(data['current_precipitaion'])}\n' \
+                f'Wind speed: {round(data['current_wind_speed_10m'], 1)}',
+                reply_markup=ReplyKeyboardRemove()
+            )
 
-    await message.answer(
-        f'Current temperature: {round(data['current_temperature_2m'], 1)}\n' \
-        f'Relative humidity: {round(data['current_relative_humidity_2m'], 1)}\n' \
-        f'Precipitaion: {round(data['current_precipitaion'])}\n' \
-        f'Wind speed: {round(data['current_wind_speed_10m'], 1)}',
-        reply_markup=ReplyKeyboardRemove()
-    )
+        case 'today':
+            data = await bot_func.get_today(response)
+
+            await message.answer(
+                'In develop...'
+            )
+
+        case 'week':
+            data = await bot_func.get_week(response)
+
+            await message.answer(
+                'In develop...'
+            )
 
 
 # Ответ на геолокацию: отправка погоды.

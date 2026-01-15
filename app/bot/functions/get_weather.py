@@ -7,10 +7,10 @@ from app.bot.lexic.coordinates import coordinates
 
 
 logger = logging.getLogger(__name__)
-__all__ = ['get_weather_api', 'get_current']
+__all__ = ['get_weather_api', 'get_current', 'get_today', 'get_week']
 
 
-
+# Набор параметров для API-запроса: сейчас, на день, на неделю
 params_duration: dict[str, dict[str, list[str] | str]] = {
     "current": {
         "current": [
@@ -25,11 +25,11 @@ params_duration: dict[str, dict[str, list[str] | str]] = {
             "temperature_2m",
             "relative_humidity_2m",
             "wind_speed_10m",
-            "wind_direction_10m"
+            "wind_direction_10m",
             "weather_code"
         ],
-        "start_hour": "",
-        "end_hour": ""
+        "start_hour": "2026-01-15T10:00",
+        "end_hour": "2026-01-15T20:00"
     },
     "week": {
         "daily": [
@@ -41,7 +41,8 @@ params_duration: dict[str, dict[str, list[str] | str]] = {
             "wind_direction_10m_dominant"
             "weather_code"
         ],
-
+        "start_date": "2026-01-15",
+        "end_date": "2026-01-22"
     }
 }
 
@@ -59,6 +60,7 @@ async def get_params(latitude: float, longitude: float, duration: str = 'current
     params.update(params_duration[duration])
 
     return params
+
 
 async def get_weather_api(message: Message, city: str = 'Мурманск', duration: str = 'current'):
     '''
