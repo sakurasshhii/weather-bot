@@ -108,7 +108,7 @@ async def get_weather_api(message: Message, city: str = 'Мурманск', dura
     '''
     Функция API запроса погоды с сервера
     '''
-    if not message.location:
+    if type(message) != Message or not message.location:
         latitude = coordinates[city.capitalize()]["latitude"]
         longitude = coordinates[city.capitalize()]["longitude"]
     else:
@@ -124,7 +124,6 @@ async def get_weather_api(message: Message, city: str = 'Мурманск', dura
     # Answer recieved
     response = responses[0]
     logger.info(
-        f'Weather request from chat {message.chat.id}:\n' \
         f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E\n" \
         f"Elevation: {response.Elevation()} m asl\n" \
         f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s"

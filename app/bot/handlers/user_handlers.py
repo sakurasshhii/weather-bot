@@ -1,9 +1,9 @@
 from aiogram import Router, F
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
 from app.bot.keyboards.weather import *
-from app.bot.lexic.lexic import WEATHER_RU
+from app.bot.lexic.lexic import WEATHER_RU, WEATHER_DURATION, WEATHER_LOC
 import app.bot.functions as bot_func
 
 import logging
@@ -59,3 +59,8 @@ async def process_other_location(message: Message):
 @weather_router.message(F.text.lower().in_(city_names))
 async def process_weather_other(message: Message):
     await process_weather(message, message.text)
+
+@weather_router.callback_query(F.data.in_(WEATHER_DURATION.keys()))
+async def process_duration(callback: CallbackQuery):
+    await process_weather(callback, city='Москва', duration=callback.data)
+    

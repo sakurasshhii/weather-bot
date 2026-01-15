@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command, CommandStart
 from app.bot.lexic.lexic import MENU_ANS_RU
+from app.bot.keyboards.weather import duration_kboard
 
 
 start_router = Router()
@@ -19,6 +20,13 @@ async def process_start_command(message: Message):
 async def process_help_command(message: Message):
     await message.answer(MENU_ANS_RU['/help'])
 
+# /get_weather
+@start_router.message(Command(commands=['get_weather']))
+async def process_start_weather(message: Message):
+    await message.answer(
+        text=(MENU_ANS_RU['/get_weather']),
+        reply_markup=duration_kboard
+    )
 
 # any other message
 @unexpected_router.message()
