@@ -26,7 +26,7 @@ async def process_ask_location(message: Message):
 
 
 @api_router.message(Command(commands=['weather']))
-async def process_weather(message: Message, city: str = 'Мурманск', duration: str = 'current'):
+async def process_weather(message: Message, city: str | None = None, duration: str = 'current'):
     '''
     Главный погодный хэндлер: обрабатывает все запросы на погоду.
     
@@ -35,7 +35,10 @@ async def process_weather(message: Message, city: str = 'Мурманск', dura
     :param city: Город
     :param duration: Запрос на погоду сейчас / сегодня / недельный
     '''
-    result = await bot_func.get_weather_api(message=message, city=city, duration=duration)
+    if city is not None or message.location is None:
+        result = await bot_func.get_weather_api(user_loc=city, duration=duration)
+    else:
+        result = await bot_func.get_weather_api(user_loc=message.location, duration=duration)
     
     await message.answer(
         text=repr(result),
@@ -62,5 +65,8 @@ async def process_weather_other(message: Message):
 
 @weather_router.callback_query(F.data.in_(WEATHER_DURATION.keys()))
 async def process_duration(callback: CallbackQuery):
-    await process_weather(callback, city='Москва', duration=callback.data)
-    
+    result = await bot_func.get_weather_api(user_loc=None, duration=callback.data)
+
+    await callback.answer(
+        text=repr(result)
+    )

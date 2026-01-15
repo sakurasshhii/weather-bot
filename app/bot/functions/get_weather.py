@@ -2,7 +2,7 @@ import openmeteo_requests
 import logging
 import pandas as pd
 
-from aiogram.types import Message
+from aiogram.types import Message, Location
 from app.bot.lexic.coordinates import coordinates
 
 
@@ -38,7 +38,7 @@ params_duration: dict[str, dict[str, list[str] | str]] = {
             "temperature_2m_min",
             "precipitation_sum",
             "wind_speed_10m_max",
-            "wind_direction_10m_dominant"
+            "wind_direction_10m_dominant",
             "weather_code"
         ],
         "start_date": "2026-01-15",
@@ -47,11 +47,13 @@ params_duration: dict[str, dict[str, list[str] | str]] = {
 }
 
 
-async def get_params(latitude: float, longitude: float, duration: str = 'current'):
+async def get_params(latitude: float, longitude: float, duration: str):
     ''' 
     Генератор параметров для API-запроса погоды, 
     в зависимости от выбранного промежутка времени
     '''
+    if duration is None:
+        duration = 'current'
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -70,6 +72,8 @@ async def weather_cur_resp(response_cur) -> pd.Series:
     variables = [response_cur.Variables(i).Value() for i in range(len(names))]
 
     current_series_pd = pd.Series(names, variables)
+
+    logger.info(f'weather data processed:\n\n{current_series_pd}')
 
     return current_series_pd
 
@@ -101,23 +105,32 @@ async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
     dur_dataframe_pd = pd.DataFrame(data=time_data)
     dur_dataframe_pd.index = time_mark
 
+    logger.info(f'weather data processed:\n\n{dur_dataframe_pd}')
+
     return dur_dataframe_pd
 
 
-async def get_weather_api(message: Message, city: str = 'Мурманск', duration: str = 'current'):
+async def get_weather_api(user_loc: Location | str | None, duration: str | None = None):
     '''
     Функция API запроса погоды с сервера
     '''
-    if type(message) != Message or not message.location:
-        latitude = coordinates[city.capitalize()]["latitude"]
-        longitude = coordinates[city.capitalize()]["longitude"]
+    if type(user_loc) == str:
+        latitude = coordinates[user_loc.capitalize()]["latitude"]
+        longitude = coordinates[user_loc.capitalize()]["longitude"]
+    elif type(user_loc) == Location:
+        latitude = user_loc.latitude
+        longitude = user_loc.longitude
     else:
-        latitude = message.location.latitude
-        longitude = message.location.longitude
+        latitude = 51.1
+        longitude = 15.39
 
     openmeteo = openmeteo_requests.AsyncClient()
 
     url = "https://api.open-meteo.com/v1/forecast"
+
+    if duration is None:
+        duration = 'current'
+        
     params = await get_params(latitude, longitude, duration)
     responses = await openmeteo.weather_api(url, params=params)
 
