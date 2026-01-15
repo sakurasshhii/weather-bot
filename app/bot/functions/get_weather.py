@@ -7,7 +7,7 @@ from app.bot.lexic.coordinates import coordinates
 
 
 logger = logging.getLogger(__name__)
-__all__ = ['get_weather_api', 'get_current', 'get_today', 'get_week']
+__all__ = ['get_weather_api']
 
 
 # Набор параметров для API-запроса: сейчас, на день, на неделю
@@ -62,9 +62,51 @@ async def get_params(latitude: float, longitude: float, duration: str = 'current
     return params
 
 
+async def weather_cur_resp(response_cur) -> pd.Series:
+    '''
+    Обрабатывает ответ на запрос погоды сейчас
+    '''
+    names = params_duration["current"]["current"]
+    variables = [response_cur.Variables(i).Value() for i in range(len(names))]
+
+    current_series_pd = pd.Series(names, variables)
+
+    return current_series_pd
+
+
+async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
+    '''
+    Обрабатывает ответ на запрос погоды сегодня / на неделю
+    
+    :param response_dur: class 'openmeteo_sdk.VariablesWithTime.VariablesWithTime'
+    :param duration: клиентская кнопка 'today' / 'week'
+    :param key: соответствующий серверный параметр 'hourly' / 'daily'
+    :return: таблица погодных показателей за запрашиваемый период
+    :rtype: DataFrame
+    '''
+    time_mark = pd.date_range(
+        start = pd.to_datetime(response_dur.Time(), unit='s'),
+        end = pd.to_datetime(response_dur.TimeEnd(), unit='s'),
+        freq = pd.Timedelta(seconds=response_dur.Interval()),
+        inclusive='left'
+    )
+
+    variable_names = params_duration[duration][key]
+    time_data = {
+        variable_names[i]:
+        response_dur.Variables(i).ValuesAsNumpy()
+        for i in range(response_dur.VariablesLength())
+    }
+
+    dur_dataframe_pd = pd.DataFrame(data=time_data)
+    dur_dataframe_pd.index = time_mark
+
+    return dur_dataframe_pd
+
+
 async def get_weather_api(message: Message, city: str = 'Мурманск', duration: str = 'current'):
     '''
-    Функция API запроса погоды
+    Функция API запроса погоды с сервера
     '''
     if not message.location:
         latitude = coordinates[city.capitalize()]["latitude"]
@@ -79,7 +121,7 @@ async def get_weather_api(message: Message, city: str = 'Мурманск', dura
     params = await get_params(latitude, longitude, duration)
     responses = await openmeteo.weather_api(url, params=params)
 
-    # Process first location
+    # Answer recieved
     response = responses[0]
     logger.info(
         f'Weather request from chat {message.chat.id}:\n' \
@@ -88,21 +130,13 @@ async def get_weather_api(message: Message, city: str = 'Мурманск', dura
         f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s"
     )
 
-    return response
-
-async def get_current(response) -> pd.Series:
-    '''
-    Получение текущей погоды из результата запроса
-    '''
-    current = response.Current()
-    variables = [current.Variables(i).Value() for i in range(4)]
-
-    data = pd.Series(
-        variables, 
-        ['current_temperature_2m', 'current_relative_humidity_2m', 'current_precipitaion', 'current_wind_speed_10m']
-    )
-
-    return data
-
-async def response_maker(response):
-    pass
+    match duration:
+        case 'current':
+            result_pd = await weather_cur_resp(response.Current())
+            return result_pd
+        case 'today':
+            result_pd = await weather_dur_resp(response.Hourly(), duration, 'hourly')
+            return result_pd
+        case 'week':
+            result_pd = await weather_dur_resp(response.Daily(), duration, 'daily')
+            return result_pd
