@@ -10,7 +10,57 @@ logger = logging.getLogger(__name__)
 __all__ = ['get_weather_api', 'get_current']
 
 
-async def get_weather_api(message: Message, city: str = 'Мурманск'):
+
+params_duration: dict[str, dict[str, list[str] | str]] = {
+    "current": {
+        "current": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "precipitation",
+            "wind_speed_10m"
+        ],
+    },
+    "today": {
+        "hourly": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "wind_speed_10m",
+            "wind_direction_10m"
+            "weather_code"
+        ],
+        "start_hour": "",
+        "end_hour": ""
+    },
+    "week": {
+        "daily": [
+            "temperature_2m_max",
+            "temperature_2m_mean",
+            "temperature_2m_min",
+            "precipitation_sum",
+            "wind_speed_10m_max",
+            "wind_direction_10m_dominant"
+            "weather_code"
+        ],
+
+    }
+}
+
+
+async def get_params(latitude: float, longitude: float, duration: str = 'current'):
+    ''' 
+    Генератор параметров для API-запроса погоды, 
+    в зависимости от выбранного промежутка времени
+    '''
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "timezone": "auto"
+    }
+    params.update(params_duration[duration])
+
+    return params
+
+async def get_weather_api(message: Message, city: str = 'Мурманск', duration: str = 'current'):
     '''
     Функция API запроса погоды
     '''
@@ -23,15 +73,8 @@ async def get_weather_api(message: Message, city: str = 'Мурманск'):
 
     openmeteo = openmeteo_requests.AsyncClient()
 
-    # Make sure all required weather variables are listed here
-    # The order of variables in hourly or daily is important to assign them correctly below
     url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "current": ["temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m"],
-        "timezone": "auto"
-    }
+    params = await get_params(latitude, longitude, duration)
     responses = await openmeteo.weather_api(url, params=params)
 
     # Process first location
@@ -50,13 +93,7 @@ async def get_current(response) -> pd.Series:
     Получение текущей погоды из результата запроса
     '''
     current = response.Current()
-
     variables = [current.Variables(i).Value() for i in range(4)]
-
-    # current_temperature_2m = current.Variables(0).Value()  # pyright: ignore[reportOptionalMemberAccess]
-    # current_relative_humidity_2m = current.Variables(1).Value()  # pyright: ignore[reportOptionalMemberAccess]
-    # current_precipitaion = current.Variables(2).Value() # pyright: ignore[reportOptionalMemberAccess]
-    # current_wind_speed_10m = current.Variables(3).Value() # pyright: ignore[reportOptionalMemberAccess]
 
     data = pd.Series(
         variables, 
@@ -64,3 +101,6 @@ async def get_current(response) -> pd.Series:
     )
 
     return data
+
+async def response_maker(response):
+    pass
