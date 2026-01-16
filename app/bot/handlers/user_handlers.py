@@ -16,7 +16,8 @@ api_router = Router()
 weather_router = Router()
 
 
-# Запрос локации для погоды
+# !на доработке — убрать из меню
+# быстрая команда: отправить погоду сейчас в текущей локации
 @weather_router.message(Command(commands=['weather_in_location']))
 async def process_ask_location(message: Message):
     await message.answer(
@@ -44,12 +45,23 @@ async def process_weather(message: Message, city: str | None = None, duration: s
         text=repr(result),
         reply_markup=ReplyKeyboardRemove()
     )
+    '''
+    разбить на разные команды:
+    /weather_now
+    /weather_today
+    /weather_week
+    '''
 
 
+# ! на доработке: только сохранение в бд
 # Ответ на геолокацию: отправка погоды.
 @weather_router.message(F.location)
 async def process_weather_loc(message: Message):
     await process_weather(message)
+    '''
+    Доработать: локация теперь вспомогательная функция.
+    При ее вызове данные сохраняются в бд.
+    '''
 
 
 # Запрос: введите ваш город
@@ -62,6 +74,7 @@ async def process_other_location(message: Message):
 @weather_router.message(F.text.lower().in_(city_names))
 async def process_weather_other(message: Message):
     await process_weather(message, message.text)
+    # также вспомогательная ф-я с сохранением в бд
 
 @weather_router.callback_query(F.data.in_(WEATHER_DURATION.keys()))
 async def process_duration(callback: CallbackQuery):
@@ -73,3 +86,4 @@ async def process_duration(callback: CallbackQuery):
         chat_id=callback.message.chat.id,
         text=repr(result)
     )
+    # убрать
