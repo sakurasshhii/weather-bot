@@ -52,8 +52,6 @@ async def get_params(latitude: float, longitude: float, duration: str):
     Генератор параметров для API-запроса погоды, 
     в зависимости от выбранного промежутка времени
     '''
-    if duration is None:
-        duration = 'current'
     params = {
         "latitude": latitude,
         "longitude": longitude,
@@ -110,9 +108,12 @@ async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
     return dur_dataframe_pd
 
 
-async def get_weather_api(user_loc: Location | str | None, duration: str | None = None):
+async def get_weather_api(user_loc: Location | str | None, duration: str = "current"):
     '''
-    Функция API запроса погоды с сервера
+    Функция API запроса погоды с сервера.
+    
+    return: таблица данных о погоде
+    rtype: pd Series/ DataFrame, в зависимости от duration
     '''
     if type(user_loc) == str:
         latitude = coordinates[user_loc.capitalize()]["latitude"]
@@ -127,9 +128,6 @@ async def get_weather_api(user_loc: Location | str | None, duration: str | None 
     openmeteo = openmeteo_requests.AsyncClient()
 
     url = "https://api.open-meteo.com/v1/forecast"
-
-    if duration is None:
-        duration = 'current'
         
     params = await get_params(latitude, longitude, duration)
     responses = await openmeteo.weather_api(url, params=params)
