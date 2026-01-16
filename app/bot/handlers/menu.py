@@ -27,6 +27,7 @@ async def process_start_weather(message: Message):
         text=(MENU_ANS_RU['/get_weather']),
         reply_markup=duration_kboard
     )
+# убрать, сделать: weather_current, weather_today, weather_week
 
 # any other message
 @unexpected_router.message()
