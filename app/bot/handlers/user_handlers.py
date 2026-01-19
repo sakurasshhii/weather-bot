@@ -29,7 +29,7 @@ async def process_weather(cback: CallbackQuery):
     )
     if cback.message:
         await cback.message.answer(
-            text=repr(result)
+            text=result
         )
     else:
         logger.warning('CallbackQuery object has no message.answer')

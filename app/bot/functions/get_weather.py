@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 
 from .weather_param import get_params, params_duration
+from .formatter import *
 
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,7 @@ async def get_weather_api(latitude, longitude, duration):
             return result_pd
         case 'today':
             result_pd = await weather_dur_resp(response.Hourly(), duration, 'hourly')
-            return result_pd
+            return await str_format_today(result_pd)
         case 'week':
             result_pd = await weather_dur_resp(response.Daily(), duration, 'daily')
             return result_pd

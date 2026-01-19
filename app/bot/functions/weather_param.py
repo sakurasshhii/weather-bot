@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, date, UTC, timedelta
+from datetime import datetime, date, timedelta
 
 
 utc_offset = timedelta(hours=3)
