@@ -9,8 +9,9 @@ MAIN_MENU_RU: dict[str, str] = {
 # Текстовый ответ на кнопки меню
 MENU_ANS_RU: dict[str, str] = {
     '/start': 'hi!',
-    '/help': 'i cant help myself either...',
-    '/get_weather': 'Выберите временной промежуток:',
+    '/help': 'В этом чате ты можешь узнать прогноз погоды '
+        'в текущий момент/ на целый день/ на неделю. Вот мои команды:\n\n'
+        '/start_weather — отправить погоду сейчас/сегодня/на неделю',
     '/unexpected_message': 'unknown bla-bla'
 }
 

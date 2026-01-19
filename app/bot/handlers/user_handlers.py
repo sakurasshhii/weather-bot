@@ -18,15 +18,9 @@ api_router = Router()
 weather_router = Router()
 
 
+# Главный погодный хэндлер: обрабатывает все запросы на погоду
 @api_router.message(Command(commands=['weather']))
 async def process_weather(cback: CallbackQuery):
-    '''
-    Главный погодный хэндлер: обрабатывает все запросы на погоду.
-    
-    :param message: tg update
-    :type message: Message
-    '''
-
     user = await users.get_user(str(cback.from_user.id))  # type: ignore
     result = await bot_func.get_weather_api(
         latitude=user["coordinates"]["latitude"],
@@ -39,13 +33,9 @@ async def process_weather(cback: CallbackQuery):
         )
     else:
         logger.warning('CallbackQuery object has no message.answer')
-    '''
-    разбить на разные команды:
-    /weather_now
-    /weather_today
-    /weather_week
-    '''
 
+
+# [кнопка dur] Передача конечного запроса погоды
 @weather_router.callback_query(F.data.in_(['current', 'today', 'week']))
 async def weather_with_duration(cback: CallbackQuery):
     if cback.message:
@@ -54,10 +44,11 @@ async def weather_with_duration(cback: CallbackQuery):
         )
     else:
         logger.warning('CallbackQuery object has no message.answer')
-    logger.info(cback.model_dump_json(indent=4))
+
     await process_weather(cback)
 
 
+# Уточнение запроса погоды: сейчас, сегодня, на нделю
 @weather_router.message(Command(commands='duration'))
 async def process_ask_duration(message: Message):
     await message.answer(
