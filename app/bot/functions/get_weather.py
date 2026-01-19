@@ -1,47 +1,12 @@
 import openmeteo_requests
 import logging
 import pandas as pd
-import json
 
-from aiogram.types import Message, Location
-from app.bot.lexic.coordinates import coordinates
-from .formatter import daily_format, hourly_format
+from .weather_param import get_params, params_duration
 
 
 logger = logging.getLogger(__name__)
 __all__ = ['get_weather_api']
-
-
-with open(r"app\bot\functions\params_duration.json", encoding="utf-8", mode="r") as f:
-    params_duration = json.load(f)
-
-
-async def get_params(latitude: float, longitude: float, duration: str):
-    ''' 
-    Генератор параметров для API-запроса погоды, 
-    в зависимости от выбранного промежутка времени
-    '''
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "timezone": "auto"
-    }
-    params.update(params_duration[duration])
-    match duration:
-        case "today":
-            hour_st, hour_en = await hourly_format()
-            params.update({
-                "start_hour": hour_st,
-                "end_hour": hour_en
-            })
-        case "week":
-            date_st, date_en = await daily_format()
-            params.update({
-                "start_date": date_st,
-                "end_date": date_en
-            })
-
-    return params
 
 
 async def weather_cur_resp(response_cur) -> pd.Series:
