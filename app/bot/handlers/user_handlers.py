@@ -33,10 +33,12 @@ async def process_weather(cback: CallbackQuery):
         longitude=user["coordinates"]["longitude"],
         duration=cback.data
     )
-    
-    await cback.message.answer(
-        text=repr(result)[:200]
-    )
+    if cback.message:
+        await cback.message.answer(
+            text=repr(result)
+        )
+    else:
+        logger.warning('CallbackQuery object has no message.answer')
     '''
     разбить на разные команды:
     /weather_now
@@ -46,9 +48,12 @@ async def process_weather(cback: CallbackQuery):
 
 @weather_router.callback_query(F.data.in_(['current', 'today', 'week']))
 async def weather_with_duration(cback: CallbackQuery):
-    await cback.message.answer(
-        text=WEATHER_RU['weather_ask']
-    )
+    if cback.message:
+        await cback.message.answer(
+            text=WEATHER_RU['weather_ask']
+        )
+    else:
+        logger.warning('CallbackQuery object has no message.answer')
     logger.info(cback.model_dump_json(indent=4))
     await process_weather(cback)
 
