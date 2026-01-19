@@ -3,10 +3,15 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+# from aiogram.enums import ParseMode  # parse_mode=ParseMode.HTML
 from config_data.config import Config, load_config
-import app.bot.handlers as handlers
-import app.bot.keyboards as keyboards
+from app.bot.keyboards import set_main_menu
+from app.bot.handlers import (
+    start_router,
+    api_router,
+    weather_router,
+    unexpected_router
+)
 
 
 logger = logging.getLogger(__name__)
@@ -30,26 +35,26 @@ async def main() -> None:
     # Инициализируем бот и диспетчер
     bot = Bot(
         token=config.tg_bot.bot_token,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+        default=DefaultBotProperties()
     )
     dp = Dispatcher()  # добавить объект хранилища storage
 
     # Настраиваем кнопку Menu
-    await keyboards.set_main_menu(bot)
+    await set_main_menu(bot)
 
     # регистрируем роутеры
     logger.info('Include routers...')
 
     dp.include_routers(
-        handlers.start_router,
-        handlers.api_router,
-        handlers.weather_router,
-        handlers.unexpected_router
+        start_router,
+        api_router,
+        weather_router,
+        unexpected_router
     )
 
     logger.info('start polling...')
 
-    await bot.delete_webhook(drop_pending_updates=False)
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 
