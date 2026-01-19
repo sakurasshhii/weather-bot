@@ -26,6 +26,7 @@ WEATHER_RU: dict[str, str] = {
     'weather_ask': 'Щас-щас, секундочку...'
 }
 
+# —> Клавиатуры:
 WEATHER_LOC_BTN: dict[str, str] = {
     'ask_city': 'Определить вручную',
     'ask_location': 'Отправить геопозицию'

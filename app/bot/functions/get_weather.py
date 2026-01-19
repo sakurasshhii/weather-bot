@@ -5,6 +5,7 @@ import json
 
 from aiogram.types import Message, Location
 from app.bot.lexic.coordinates import coordinates
+from .formatter import daily_format, hourly_format
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,19 @@ async def get_params(latitude: float, longitude: float, duration: str):
         "timezone": "auto"
     }
     params.update(params_duration[duration])
+    match duration:
+        case "today":
+            hour_st, hour_en = await hourly_format()
+            params.update({
+                "start_hour": hour_st,
+                "end_hour": hour_en
+            })
+        case "week":
+            date_st, date_en = await daily_format()
+            params.update({
+                "start_date": date_st,
+                "end_date": date_en
+            })
 
     return params
 
