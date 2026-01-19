@@ -1,6 +1,7 @@
 import openmeteo_requests
 import logging
 import pandas as pd
+import json
 
 from aiogram.types import Message, Location
 from app.bot.lexic.coordinates import coordinates
@@ -10,41 +11,8 @@ logger = logging.getLogger(__name__)
 __all__ = ['get_weather_api']
 
 
-# Набор параметров для API-запроса: сейчас, на день, на неделю
-params_duration: dict[str, dict[str, list[str] | str]] = {
-    "current": {
-        "current": [
-            "temperature_2m",
-            "relative_humidity_2m",
-            "precipitation",
-            "wind_speed_10m"
-        ],
-    },
-    "today": {
-        "hourly": [
-            "temperature_2m",
-            "relative_humidity_2m",
-            "wind_speed_10m",
-            "wind_direction_10m",
-            "weather_code"
-        ],
-        "start_hour": "2026-01-15T10:00",
-        "end_hour": "2026-01-15T20:00"
-    },
-    "week": {
-        "daily": [
-            "temperature_2m_max",
-            "temperature_2m_mean",
-            "temperature_2m_min",
-            "precipitation_sum",
-            "wind_speed_10m_max",
-            "wind_direction_10m_dominant",
-            "weather_code"
-        ],
-        "start_date": "2026-01-15",
-        "end_date": "2026-01-22"
-    }
-}
+with open(r"app\bot\functions\params_duration.json", encoding="utf-8", mode="r") as f:
+    params_duration = json.load(f)
 
 
 async def get_params(latitude: float, longitude: float, duration: str):
@@ -108,23 +76,13 @@ async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
     return dur_dataframe_pd
 
 
-async def get_weather_api(user_loc: Location | str | None, duration: str = "current"):
+async def get_weather_api(latitude, longitude, duration):
     '''
     Функция API запроса погоды с сервера.
     
     return: таблица данных о погоде
     rtype: pd Series/ DataFrame, в зависимости от duration
     '''
-    if type(user_loc) == str:
-        latitude = coordinates[user_loc.capitalize()]["latitude"]
-        longitude = coordinates[user_loc.capitalize()]["longitude"]
-    elif type(user_loc) == Location:
-        latitude = user_loc.latitude
-        longitude = user_loc.longitude
-    else:
-        latitude = 51.1
-        longitude = 15.39
-
     openmeteo = openmeteo_requests.AsyncClient()
 
     url = "https://api.open-meteo.com/v1/forecast"
