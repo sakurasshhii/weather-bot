@@ -2,9 +2,12 @@ from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command
 from app.bot.lexic.coordinates import *
-from app.bot.keyboards.weather import *
-from app.bot.lexic.lexic import WEATHER_RU, WEATHER_DURATION, WEATHER_LOC
+from app.bot.keyboards.weather import location_kboard, geo_kboard
+from app.bot.lexic.lexic import WEATHER_RU
+from app.bot.lexic.coordinates import coordinates
+from app.bot.filters import IsValidCity
 import app.bot.functions as bot_func
+import app.infrastructure.user_data as users
 
 import logging
 import pandas as pd
@@ -14,16 +17,6 @@ logger = logging.getLogger(__name__)
 
 api_router = Router()
 weather_router = Router()
-
-
-# !на доработке — убрать из меню
-# быстрая команда: отправить погоду сейчас в текущей локации
-@weather_router.message(Command(commands=['weather_in_location']))
-async def process_ask_location(message: Message):
-    await message.answer(
-        text=WEATHER_RU['req_loc_txt'],
-        reply_markup=req_location_keyboard
-    )
 
 
 @api_router.message(Command(commands=['weather']))
@@ -52,38 +45,73 @@ async def process_weather(message: Message, city: str | None = None, duration: s
     /weather_week
     '''
 
-
-# ! на доработке: только сохранение в бд
-# Ответ на геолокацию: отправка погоды.
+# [кнопка геолокация] Ответ на геолокацию: сохранение в бд
 @weather_router.message(F.location)
-async def process_weather_loc(message: Message):
-    await process_weather(message)
-    '''
-    Доработать: локация теперь вспомогательная функция.
-    При ее вызове данные сохраняются в бд.
-    '''
+async def process_got_location(message: Message):
+    if message.from_user and message.location:
+        await users.add_user(
+            user_id=message.from_user.id,
+            latitude=message.location.latitude,
+            longitude=message.location.longitude
+        )
+        await message.answer(
+            text='-data added-',
+            reply_markup=ReplyKeyboardRemove()
+        )
+    # await process_weather(message)
 
 
-# Запрос: введите ваш город
-@weather_router.message(F.text == WEATHER_RU['other_loc_btn'])
-async def process_other_location(message: Message):
-    await message.answer(WEATHER_RU['other_loc'])
-
-
-# Ответ на название города: отправка погоды.
+# Ответ на название города: сохранение в бд
 @weather_router.message(F.text.lower().in_(city_names))
-async def process_weather_other(message: Message):
-    await process_weather(message, message.text)
+async def process_got_city(message: Message):
+    if message.text and message.from_user:
+        city = message.text.capitalize()
+        lat = coordinates[city]["latitude"]
+        lon = coordinates[city]["longitude"]
+        
+        await users.update_user_info(
+            user_id=message.from_user.id,
+            coordinates=(lat, lon),
+            city=city
+        )
+
+    # await process_weather(message, message.text)
     # также вспомогательная ф-я с сохранением в бд
 
-@weather_router.callback_query(F.data.in_(WEATHER_DURATION.keys()))
-async def process_duration(callback: CallbackQuery):
-    result = await bot_func.get_weather_api(user_loc=None, duration=callback.data)
 
-    logger.info(callback.model_dump_json(indent=4))
+# [кнопка ввести локацию] Запрос: введите ваш город
+@weather_router.callback_query(F.data == 'ask_city')
+async def process_ask_city(cback: CallbackQuery):
+    if cback.message:
+        await cback.message.answer(WEATHER_RU['other_loc'])
 
-    await callback.bot.send_message(
-        chat_id=callback.message.chat.id,
-        text=repr(result)
+
+# [кнопка определить локацию] Запрос: отправьте геопозицию
+@weather_router.callback_query(F.data == 'ask_location')
+async def process_ask_loc(cback: CallbackQuery):
+    if cback.message:
+        await cback.message.answer(
+            text='-press button-',
+            reply_markup=geo_kboard  # добавить в клавиатуру возможность вернуться назад
+        )
+
+
+# Запуск запроса погоды
+@weather_router.message(Command(commands='start_weather'))
+async def process_weather_main(message: Message):
+    data = await users.load_data()
+    if data[str(message.from_user.id)]["coordinates"]: # type: ignore
+        pass
+    else:
+        await message.answer(
+        text=WEATHER_RU['req_loc_txt'],
+        reply_markup=location_kboard
     )
-    # убрать
+    await message.answer('Конец выполнения функции process_weather_main')
+
+
+@weather_router.message(Command(commands='duration'))
+async def process_ask_duration(message: Message):
+    await message.answer(
+        text=''
+    )
