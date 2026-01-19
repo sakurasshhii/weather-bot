@@ -81,10 +81,10 @@ async def get_weather_api(latitude, longitude, duration):
     match duration:
         case 'current':
             result_pd = await weather_cur_resp(response.Current())
-            return result_pd
+            return await str_format_current(result_pd)
         case 'today':
             result_pd = await weather_dur_resp(response.Hourly(), duration, 'hourly')
             return await str_format_today(result_pd)
         case 'week':
             result_pd = await weather_dur_resp(response.Daily(), duration, 'daily')
-            return result_pd
+            return repr(result_pd)

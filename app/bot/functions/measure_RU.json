@@ -1,0 +1,8 @@
+{
+    "temperature_2m": "Температура {}°",
+    "relative_humidity_2m": "Относительная влажность {}%",
+    "precipitation": "Осадки {}мм",
+    "wind_speed_10m": "Скорость ветра {}м/с",
+    "wind_direction_10m": "Направление ветра {}°",
+    "weather_code": "WMO"
+}
