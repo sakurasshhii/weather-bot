@@ -7,7 +7,7 @@ __all__ = ['load_data', 'update_data', 'add_user', 'del_user']
 
 logger = logging.getLogger(__name__)
 
-PATH = os.path.normpath(r"app\infrastructure\user_info\data.json")
+PATH = os.path.normpath(r"app\infrastructure\user_data\data.json")
 
 
 async def load_data():
