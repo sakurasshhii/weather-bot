@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 
-__all__ = ['load_data', 'update_data', 'add_user', 'del_user', 'update_user_info']
+__all__ = ['update_data', 'add_user', 'del_user', 'update_user_info', 'get_user']
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,12 @@ async def update_user_info(user_id: int | str, **kwargs: Any):
     data[user_id].update(kwargs)
 
     await update_data(data)
+
+
+async def get_user(user_id: int | str):
+    data = await load_data()
+
+    return data[str(user_id)]
 
 
 async def del_user(user_id: int | str) -> None:
