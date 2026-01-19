@@ -1,9 +1,10 @@
 import json
 import os
 import logging
+from typing import Any
 
 
-__all__ = ['load_data', 'update_data', 'add_user', 'del_user']
+__all__ = ['load_data', 'update_data', 'add_user', 'del_user', 'update_user_info']
 
 logger = logging.getLogger(__name__)
 
@@ -13,21 +14,23 @@ PATH = os.path.normpath(r"app\infrastructure\user_data\data.json")
 async def load_data():
     with open(file=PATH, mode="r+", encoding="utf-8") as f:
         try:
-            return await json.load(f)
+            return json.load(f)
         except json.JSONDecodeError:
             return {}
 
 
 async def update_data(data: dict) -> None:
-    with open(file=PATH, mode="r+", encoding="utf-8") as f:
+    with open(file=PATH, mode="w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         
     logging.info('data updated...')
 
 
-async def add_user(user_id: int, latitude: float | None = None, longitude: float | None = None) -> None:
+async def add_user(user_id: int | str, latitude: float | None = None, longitude: float | None = None) -> None:
     data = await load_data()
-    data.setdefault(user_id, {"coordinates": {}})
+    user_id = str(user_id)
+    if user_id not in data:
+        data.setdefault(user_id, {"coordinates": None})
     if latitude and longitude:
         data[user_id]["coordinates"] = {
             "latitude": latitude,
@@ -37,8 +40,24 @@ async def add_user(user_id: int, latitude: float | None = None, longitude: float
     await update_data(data)
 
 
-async def del_user(user_id: int) -> None:
+async def update_user_info(user_id: int | str, **kwargs: Any):
     data = await load_data()
+    user_id = str(user_id)
+    if user_id not in data:
+        await add_user(user_id)
+    if "coordinates" in kwargs:
+        kwargs["coordinates"] = {
+            "latitude": kwargs["coordinates"][0],
+            "longitude": kwargs["coordinates"][1]
+        }
+    data[user_id].update(kwargs)
+
+    await update_data(data)
+
+
+async def del_user(user_id: int | str) -> None:
+    data = await load_data()
+    user_id = str(user_id)
     if user_id in data:
         del data[user_id]
 

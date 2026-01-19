@@ -1,12 +1,12 @@
-# Кнопки общего меню
+# Меню бота
 MAIN_MENU_RU: dict[str, str] = {
     '/start': 'Запуск бота',
-    '/help': 'Информация о возможностях бота',
-    '/weather_in_location': 'Погода по местоположению',
-    '/get_weather': 'Погода по времени...'
+    '/help': 'Информация о возможностях бота'
+    # '/weather_in_location': 'Погода по местоположению',
+    # '/get_weather': 'Погода по времени...'
 }
 
-# Текстовый ответ на кнопки общего меню
+# Текстовый ответ на кнопки меню
 MENU_ANS_RU: dict[str, str] = {
     '/start': 'hi!',
     '/help': 'i cant help myself either...',
@@ -22,12 +22,12 @@ WEATHER_RU: dict[str, str] = {
     'other_loc': 'Введите название города...'
 }
 
-WEATHER_LOC: dict[str, str] = {
-    'req_loc_txt': 'Для определения погоды требуются данные о вашем местоположении.',
-    'req_loc_btn': 'Отправить геопозицию'
+WEATHER_LOC_BTN: dict[str, str] = {
+    'ask_city': 'Определить вручную',
+    'ask_location': 'Отправить геопозицию'
 }
 
-WEATHER_DURATION: dict[str, str] = {
+WEATHER_DURATION_BTN: dict[str, str] = {
     'current': 'Сейчас',
     'today': 'Сегодня',
     'week': 'На неделю'

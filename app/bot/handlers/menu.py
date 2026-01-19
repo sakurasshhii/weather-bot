@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # /start
 @start_router.message(CommandStart())
 async def process_start_command(message: Message):
-    await data.add_user(message.from_user.id)
+    await data.add_user(message.from_user.id) # pyright: ignore[reportOptionalMemberAccess]
     await message.answer(MENU_ANS_RU['/start'])
 
 # /help
@@ -24,6 +24,7 @@ async def process_start_command(message: Message):
 async def process_help_command(message: Message):
     await message.answer(MENU_ANS_RU['/help'])
 
+'''
 # /get_weather
 @start_router.message(Command(commands=['get_weather']))
 async def process_start_weather(message: Message):
@@ -32,3 +33,4 @@ async def process_start_weather(message: Message):
         reply_markup=duration_kboard
     )
 # убрать, сделать: weather_current, weather_today, weather_week
+'''
