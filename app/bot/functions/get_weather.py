@@ -87,6 +87,6 @@ async def get_weather_api(latitude, longitude, duration) -> str:
             return await str_format_today(result_pd)
         case 'week':
             result_pd = await weather_dur_resp(response.Daily(), duration, 'daily')
-            return repr(result_pd)
+            return await str_format_week(result_pd)
     
     return "Error during get_weather_api"
