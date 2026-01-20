@@ -1,29 +1,34 @@
 import json
+import pandas as pd
 
 
-with open(r"app\bot\functions\measure_RU.json", encoding='utf-8', mode='r') as f:
+# Загружаем перевод наименований параметров погоды для вывода в клиент
+with open(r"app\bot\functions\params_formatted_RU.json", encoding='utf-8', mode='r') as f:
     measure = json.load(f)
 
 
-async def str_format_current(pd_ser):
+# Current format
+async def str_format_current(pd_ser: pd.Series) -> str:
     ans = [measure[k].format(val) for val, k in pd_ser.items()]
     ans = '\n'.join(ans)
 
     return ans
 
 
-async def str_format_today(pd_data):
+# Today format
+async def str_format_today(pd_data: pd.DataFrame) -> str:
     mean = {}
     for title in ['relative_humidity_2m', 'wind_speed_10m', 'wind_direction_10m']:
         mean.update({title: pd_data[title].mean()})
 
-    today = pd_data.index[0].strftime('%d.%m.%Y')
+    today = pd_data.index[0].strftime('%d.%m.%Y')  # сегодняшнее число
 
     dates = pd_data.index
-    dates = map(lambda d: d.strftime('%H:00'), dates)
+    dates = tuple(map(lambda d: d.strftime('%H:00'), dates))  # время в формате hh:mm
     pd_data.index = dates
 
-    meanes = 'Относительная влажность {}%\nВетер {} м/c\nНаправление ветра {}°'.format(*map(str, mean.values()))
+    meanes = map(lambda val: str(round(val, 1)), mean.values())  # погодные показатели, округленные до десятых
+    meanes = 'Относительная влажность {}%\nВетер {} м/c\nНаправление ветра {}°'.format(*meanes)
 
     ans = f'''
 Погода {today}:
@@ -34,3 +39,13 @@ async def str_format_today(pd_data):
 '''
 
     return ans
+
+
+# Week format
+async def str_format_week(pd_data: pd.DataFrame) -> str:
+    pass
+
+
+# Wind direction in words
+async def wind_direction_to_word(degrees: float) -> str:
+    pass
