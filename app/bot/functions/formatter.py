@@ -1,14 +1,14 @@
 import json
 import pandas as pd
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 # Загружаем перевод наименований параметров погоды для вывода в клиент
 with open(r"app\bot\functions\params_formatted_RU.json", encoding='utf-8', mode='r') as f:
     measure = json.load(f)
 
-# Загружаем параметры запроса
-with open(r"app\bot\functions\params_duration.json", encoding='utf-8', mode='r') as f:
-    params = json.load(f)
 
 # Загружаем WMO code
 with open(r"app\bot\functions\WMO_code_RU.json", encoding="utf-8", mode="r") as f:
@@ -61,21 +61,35 @@ async def str_format_today(pd_data: pd.DataFrame) -> str:
     dates = tuple(map(lambda d: d.strftime(r'%H:00'), pd_data.index))  # время в формате hh:mm    
     pd_data.index = dates
 
-    pd_data["temperature_2m"] = [round(x, 1) for x in pd_data["temperature_2m"]]  # температура в формате xx.x
+    mean = {name: round(pd_data[name].mean(), 1) for name in pd_data.columns}
+    logger.info(f'средние данные: {mean.items()}')
+    # for title in pd_data.columns:
+    #     mean.update({title: round(pd_data[title].mean(), 1)})
 
-    mean = {}
-    for title in ['relative_humidity_2m', 'wind_speed_10m', 'wind_direction_10m']:
-        mean.update({title: pd_data[title].mean()})
+    pd_data = pd_data.map(lambda x: round(x, 1))
 
-    meanes = map(lambda val: str(round(val, 1)), mean.values())  # погодные показатели, округленные до десятых
-    meanes = 'Относительная влажность {}%\nВетер {} м/c\nНаправление ветра {}°'.format(*meanes)
+    temp = '''
+{}
+
+Относительная влажность {}%
+Ветер {} м/c
+Направление ветра {}° ({})
+    '''
+
+    meanes_dt = temp.format(
+        WMO_format(int(pd_data['weather_code'].max())),
+        mean['relative_humidity_2m'], 
+        mean['wind_speed_10m'], 
+        mean['wind_direction_10m'],
+        wind_direction_to_word(mean['wind_speed_10m'])
+    )
 
     ans = f'''
 Погода {today}:
 
 {pd_data["temperature_2m"].to_frame(name="температура")}
 
-{meanes}
+{meanes_dt}
 '''
 
     return ans
@@ -88,7 +102,7 @@ async def str_format_week(pd_data: pd.DataFrame) -> str:
 
     temp = '''
 Температура воздуха от {}° до {}°, в среднем, {}°
-Ожидается {}, осадки {}мм
+{}, осадки {}мм
 Ветер {}м/с, {}° ({})
 '''
     pd_data = pd_data.map(lambda x: round(x, 1))
