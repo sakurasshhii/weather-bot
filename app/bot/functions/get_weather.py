@@ -56,7 +56,7 @@ async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
     return dur_dataframe_pd
 
 
-async def get_weather_api(latitude, longitude, duration):
+async def get_weather_api(latitude, longitude, duration) -> str:
     '''
     Функция API запроса погоды с сервера.
     
@@ -88,3 +88,5 @@ async def get_weather_api(latitude, longitude, duration):
         case 'week':
             result_pd = await weather_dur_resp(response.Daily(), duration, 'daily')
             return repr(result_pd)
+    
+    return "Error during get_weather_api"
