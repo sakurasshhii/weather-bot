@@ -1,4 +1,9 @@
 # weather-bot
-What is the weather like today?
+Телеграм-бот для запросов погоды.
+Работает через open-meteo.com api.
 
-This bot was created as pet-project. The goal is to create weather notification bot.
+Функционал:
+1. Запросить погоду на:
+    Сейчас
+    Сегодня
+    Неделю
