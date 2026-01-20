@@ -17,7 +17,7 @@ async def weather_cur_resp(response_cur) -> pd.Series:
     names = params_duration["current"]["current"]
     variables = [response_cur.Variables(i).Value() for i in range(len(names))]
 
-    current_series_pd = pd.Series(names, variables)
+    current_series_pd = pd.Series(variables, names)
 
     logger.info(f'weather data processed:\n\n{current_series_pd}')
 
