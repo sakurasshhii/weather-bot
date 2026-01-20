@@ -1,8 +1,10 @@
 import json
+import logging
 from datetime import datetime, date, timedelta
 
 
-utc_offset = timedelta(hours=3)
+logger = logging.getLogger(__name__)
+utc_offset = timedelta(hours=2)
 
 with open(r"app\bot\functions\params_duration.json", encoding="utf-8", mode="r") as f:
     params_duration = json.load(f)
@@ -10,7 +12,7 @@ with open(r"app\bot\functions\params_duration.json", encoding="utf-8", mode="r")
 
 # Рассчитывает временные рамки на день
 async def hourly_format():
-    now = datetime.now()
+    now = datetime.now() + utc_offset
     end_hour = datetime(year=now.year, month=now.month, day=now.day + 1, hour=0)
     end_hour += utc_offset
     return now.strftime(r'%Y-%m-%dT%H:00'), end_hour.strftime(r'%Y-%m-%dT%H:00')
@@ -20,6 +22,7 @@ async def hourly_format():
 async def daily_format():
     now = date.today()
     end_day = date(year=now.year, month=now.month, day=now.day + 7)
+    logger.info(f"time spread for one week: {now.isoformat()} to {end_day.isoformat()}")
     return now.isoformat(), end_day.isoformat()
 
 

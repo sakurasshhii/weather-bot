@@ -38,7 +38,7 @@ async def weather_dur_resp(response_dur, duration, key) -> pd.DataFrame:
         start = pd.to_datetime(response_dur.Time(), unit='s'),
         end = pd.to_datetime(response_dur.TimeEnd(), unit='s'),
         freq = pd.Timedelta(seconds=response_dur.Interval()),
-        inclusive='left'
+        inclusive='right'
     )
 
     variable_names = params_duration[duration][key]
