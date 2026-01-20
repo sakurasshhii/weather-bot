@@ -35,12 +35,6 @@ def wind_direction_to_word(degrees: float) -> str:
     return direction[45 * n]
 
 
-'''
-0° / 360°: Север (дует с севера).
-90°: Восток (дует с востока).
-180°: Юг (дует с юга).
-270°: Запад (дует с запада). '''
-
 # WMO decode
 def WMO_format(code: int | float) -> str:
     return WMO_RU[str(int(code))]
@@ -60,13 +54,9 @@ async def str_format_today(pd_data: pd.DataFrame) -> str:
 
     dates = tuple(map(lambda d: d.strftime(r'%H:00'), pd_data.index))  # время в формате hh:mm    
     pd_data.index = dates
+    pd_data = pd_data.map(lambda x: round(x, 1))
 
     mean = {name: round(pd_data[name].mean(), 1) for name in pd_data.columns}
-    logger.info(f'средние данные: {mean.items()}')
-    # for title in pd_data.columns:
-    #     mean.update({title: round(pd_data[title].mean(), 1)})
-
-    pd_data = pd_data.map(lambda x: round(x, 1))
 
     temp = '''
 {}
@@ -88,7 +78,6 @@ async def str_format_today(pd_data: pd.DataFrame) -> str:
 Погода {today}:
 
 {pd_data["temperature_2m"].to_frame(name="температура")}
-
 {meanes_dt}
 '''
 

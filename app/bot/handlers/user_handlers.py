@@ -9,30 +9,12 @@ import app.bot.functions as bot_func
 import app.infrastructure.user_data as users
 
 import logging
-import pandas as pd
 
 
 logger = logging.getLogger(__name__)
 
 api_router = Router()
 weather_router = Router()
-
-
-# Главный погодный хэндлер: обрабатывает все запросы на погоду
-@api_router.message(Command(commands=['weather']))
-async def process_weather(cback: CallbackQuery):
-    user = await users.get_user(str(cback.from_user.id))  # type: ignore
-    result = await bot_func.get_weather_api(
-        latitude=user["coordinates"]["latitude"],
-        longitude=user["coordinates"]["longitude"],
-        duration=cback.data
-    )
-    if cback.message:
-        await cback.message.answer(
-            text=result
-        )
-    else:
-        logger.warning('CallbackQuery object has no message.answer')
 
 
 # [кнопка dur] Передача конечного запроса погоды
@@ -42,10 +24,17 @@ async def weather_with_duration(cback: CallbackQuery):
         await cback.message.answer(
             text=WEATHER_RU['weather_ask']
         )
+        user = await users.get_user(str(cback.from_user.id))
+        result = await bot_func.get_weather_api(
+            latitude=user["coordinates"]["latitude"],
+            longitude=user["coordinates"]["longitude"],
+            duration=cback.data
+        )
+        await cback.message.answer(
+            text=result
+        )
     else:
         logger.warning('CallbackQuery object has no message.answer')
-
-    await process_weather(cback)
 
 
 # Уточнение запроса погоды: сейчас, сегодня, на нделю
@@ -95,7 +84,10 @@ async def process_got_city(message: Message):
 @weather_router.callback_query(F.data == 'ask_city')
 async def process_ask_city(cback: CallbackQuery):
     if cback.message:
-        await cback.message.answer(WEATHER_RU['other_loc'])
+        await cback.message.answer(
+            text=WEATHER_RU['other_loc'],
+            reply_markup=ReplyKeyboardRemove()
+        )
 
 
 # [кнопка определить локацию] Запрос: отправьте геопозицию
@@ -103,20 +95,27 @@ async def process_ask_city(cback: CallbackQuery):
 async def process_ask_loc(cback: CallbackQuery):
     if cback.message:
         await cback.message.answer(
-            text='-press button-',
+            text=WEATHER_RU['req_loc_btn'],
             reply_markup=geo_kboard  # добавить в клавиатуру возможность вернуться назад
         )
 
 
-# Запуск запроса погоды
-@weather_router.message(Command(commands='start_weather'))
-async def process_weather_main(message: Message):
-    user = await users.get_user(str(message.from_user.id))  # type: ignore
-    if user["coordinates"]:
-        await process_ask_duration(message)
-    else:
-        await message.answer(
+# Сменить или задать локацию
+@weather_router.message(Command(commands='set_location'))
+async def process_set_location(message: Message):
+    await message.answer(
         text=WEATHER_RU['req_loc_txt'],
         reply_markup=location_kboard
     )
-    logger.info('Конец выполнения функции process_weather_main')
+
+# Запуск запроса погоды
+@weather_router.message(Command(commands='start_weather'))
+async def process_weather_main(message: Message):
+    if message.from_user:
+        user = await users.get_user(str(message.from_user.id))
+        if user["coordinates"]:
+            await process_ask_duration(message)
+        else:
+            await process_set_location(message)
+    else:
+        logger.warning('message has no data from user')
