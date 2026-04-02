@@ -1,11 +1,11 @@
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command
-from app.bot.lexic.coordinates import *
+from app.bot.lexic.coordinates import coordinates, city_names
 from app.bot.keyboards.weather import location_kboard, geo_kboard, duration_kboard
 from app.bot.lexic.lexic import WEATHER_RU
-from app.bot.filters import IsValidCity
-import app.bot.functions as bot_func
+# from app.bot.filters import IsValidCity
+from app.bot.weather_processor import Weather, Duration
 import app.infrastructure.user_data as users
 
 import logging
@@ -25,11 +25,12 @@ async def weather_with_duration(cback: CallbackQuery):
             text=WEATHER_RU['weather_ask']
         )
         user = await users.get_user(str(cback.from_user.id))
-        result = await bot_func.get_weather_api(
+        weather = Weather(
             latitude=user["coordinates"]["latitude"],
-            longitude=user["coordinates"]["longitude"],
-            duration=cback.data
+            longitude=user["coordinates"]["longitude"]
         )
+        duration = Duration[cback.data.upper()]
+        result = await weather.get_weather(duration=duration)
         await cback.message.answer(
             text=result
         )
