@@ -66,7 +66,7 @@ async def get_weather_api(latitude, longitude, duration) -> str:
     openmeteo = openmeteo_requests.AsyncClient()
 
     url = "https://api.open-meteo.com/v1/forecast"
-        
+
     params = await get_params(latitude, longitude, duration)
     responses = await openmeteo.weather_api(url, params=params)
 

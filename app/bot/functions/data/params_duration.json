@@ -1,5 +1,5 @@
 {
-    "current": {
+    "CURRENT": {
         "current": [
             "temperature_2m",
             "relative_humidity_2m",
@@ -7,7 +7,7 @@
             "wind_speed_10m"
         ]
     },
-    "today": {
+    "TODAY": {
         "hourly": [
             "temperature_2m",
             "relative_humidity_2m",
@@ -18,7 +18,7 @@
         "start_hour": "2026-01-15T10:00",
         "end_hour": "2026-01-15T20:00"
     },
-    "week": {
+    "WEEK": {
         "daily": [
             "temperature_2m_max",
             "temperature_2m_mean",
