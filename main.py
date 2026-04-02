@@ -3,6 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 # from aiogram.enums import ParseMode  # parse_mode=ParseMode.HTML
 from config_data.config import Config, load_config
 from app.bot.keyboards import set_main_menu
@@ -32,9 +33,11 @@ async def main() -> None:
         format=config.log.format
     )
 
+    session = AiohttpSession(proxy=config.proxy.proxy_url)
     # Инициализируем бот и диспетчер
     bot = Bot(
         token=config.tg_bot.bot_token,
+        session=session,
         default=DefaultBotProperties()
     )
     dp = Dispatcher()  # добавить объект хранилища storage
@@ -55,7 +58,11 @@ async def main() -> None:
     logger.info('start polling...')
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
+    
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
 
 
 if __name__ == '__main__':

@@ -27,12 +27,11 @@ def wind_direction_to_word(degrees: float) -> str:
         270: "западный",
         315: "северо-западный"
     }
-    degrees = int(degrees) % 360
 
-    full = degrees // 45
-    n = (full + 1, full)[abs(full - degrees) < abs(full - degrees + 45)]
-    
-    return direction[45 * n]
+    is_half = (degrees % 45) >= 22.5
+    key = (45 * (degrees // 45) + (45 * is_half)) % 360
+
+    return direction[int(key)]
 
 
 # WMO decode
